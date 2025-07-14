@@ -1,46 +1,112 @@
-# Getting Started with Create React App
+# Species Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React application for managing arthropod species information with features like CRUD operations, search/filtering, and local storage persistence.
 
-## Available Scripts
+## Project Structure
 
-In the project directory, you can run:
+```
+src/
+├── components/           # Reusable UI components
+│   ├── SearchFilters.tsx # Search and filtering interface
+│   ├── SpeciesTable.tsx  # Table display for species data
+│   ├── SpeciesForm.tsx   # Form for adding/editing species
+│   ├── Notification.tsx  # Snackbar notifications
+│   └── index.ts         # Component exports
+├── hooks/               # Custom React hooks
+│   ├── useSpecies.ts    # Species data management hook
+│   └── index.ts         # Hook exports
+├── icons/               # Custom icon components
+│   └── CustomIcons.tsx  # Text-based icon components
+├── theme/               # Material-UI theme configuration
+│   └── theme.ts         # Theme settings
+├── types/               # TypeScript type definitions
+│   └── Species.ts       # Species and related interfaces
+└── App.tsx              # Main application component
+```
 
-### `npm start`
+## Components
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### SearchFilters
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Handles the search and filtering functionality with:
 
-### `npm test`
+- Text search for species name and description
+- Type filter dropdown
+- Price range filters
+- Availability toggle
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### SpeciesTable
 
-### `npm run build`
+Displays species data in a table format with:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- All species information in columns
+- Status indicators
+- Stock management switches
+- Edit and delete actions
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### SpeciesForm
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Form component for adding and editing species with:
 
-### `npm run eject`
+- React Hook Form integration
+- Zod validation schema
+- Dynamic change tracking
+- Grid-based layout
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Notification
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Reusable notification component for displaying success/error messages.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Hooks
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### useSpecies
 
-## Learn More
+Custom hook that manages:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- Species data state
+- Filtering logic
+- Local storage operations
+- CRUD operations
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Features
+
+- **CRUD Operations**: Create, read, update, and delete species
+- **Search & Filter**: Filter by name, type, price range, and availability
+- **Form Validation**: Robust validation using React Hook Form and Zod
+- **Local Storage**: Data persistence in browser storage
+- **Responsive Design**: CSS Grid layouts for better responsiveness
+- **Type Safety**: Full TypeScript support
+
+## Technologies Used
+
+- React 18
+- TypeScript
+- Material-UI (MUI)
+- React Hook Form
+- Zod (validation)
+- CSS Grid
+
+## Getting Started
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+
+   ```bash
+   npm start
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000) to view the app.
+
+## Future Enhancements
+
+- Firebase integration for cloud storage
+- Firebase Analytics
+- Import/export functionality
+- Advanced filtering options
+- User authentication
+- Multi-language support

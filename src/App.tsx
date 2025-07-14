@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   ThemeProvider,
   createTheme,
@@ -20,6 +23,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  FormHelperText,
   Switch,
   FormControlLabel,
   Fab,
@@ -32,7 +36,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Collapse,
   Tooltip,
 } from "@mui/material";
 import "./App.css";
@@ -55,9 +58,45 @@ const CheckCircleIcon = ({ color }: { color: string }) => (
 const CancelIcon = ({ color }: { color: string }) => (
   <span style={{ color: color === "warning" ? "orange" : "red" }}>❌</span>
 );
-const ExpandMoreIcon = () => <span>▼</span>;
-const ExpandLessIcon = () => <span>▲</span>;
-const VisibilityIcon = () => <span>👁️</span>;
+
+// Zod schema for form validation
+const speciesFormSchema = z.object({
+  name: z.string().min(1, "Nazwa gatunku jest wymagana"),
+  type: z.string().min(1, "Typ jest wymagany"),
+  temperature: z.string().refine((val) => {
+    if (val === "") return true; // Allow empty
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  }, "Temperatura musi być między 0 a 100"),
+  nestHumidity: z.string().refine((val) => {
+    if (val === "") return true; // Allow empty
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  }, "Wilgotność gniazda musi być między 0 a 100"),
+  arenaHumidity: z.string().refine((val) => {
+    if (val === "") return true; // Allow empty
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  }, "Wilgotność arena musi być między 0 a 100"),
+  behavior: z.string(),
+  description: z.string(),
+  price: z.number().min(0, "Cena musi być większa od 0"),
+  available: z.boolean(),
+  inStock: z.boolean(),
+  changes: z.array(
+    z.object({
+      date: z.string(),
+      type: z
+        .string()
+        .refine((val) => ["feeding", "temperature", "other"].includes(val), {
+          message: "Typ musi być: feeding, temperature lub other",
+        }),
+      description: z.string(),
+    })
+  ),
+});
+
+type SpeciesFormData = z.infer<typeof speciesFormSchema>;
 
 interface Species {
   id: string;
@@ -76,7 +115,7 @@ interface Species {
 
 interface ChangeEntry {
   date: string;
-  type: "feeding" | "temperature" | "other";
+  type: string;
   description: string;
 }
 
@@ -135,20 +174,29 @@ function App() {
     message: "",
     severity: "success" as "success" | "error",
   });
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<Partial<Species>>({
-    name: "",
-    type: "",
-    temperature: "",
-    nestHumidity: "",
-    arenaHumidity: "",
-    changes: [],
-    behavior: "",
-    description: "",
-    price: 0,
-    available: true,
-    inStock: false,
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    getValues,
+  } = useForm<SpeciesFormData>({
+    resolver: zodResolver(speciesFormSchema),
+    defaultValues: {
+      name: "",
+      type: "",
+      temperature: "",
+      nestHumidity: "",
+      arenaHumidity: "",
+      behavior: "",
+      description: "",
+      price: 0,
+      available: true,
+      inStock: false,
+      changes: [],
+    },
   });
 
   useEffect(() => {
@@ -192,29 +240,20 @@ function App() {
     setFilteredSpecies(filtered);
   }, [species, searchTerm, typeFilter, priceRange, showAvailableOnly]);
 
-  const handleSave = () => {
-    if (!formData.name || !formData.type) {
-      setSnackbar({
-        open: true,
-        message: "Nazwa i typ są wymagane!",
-        severity: "error",
-      });
-      return;
-    }
-
+  const onSubmit = (data: SpeciesFormData) => {
     const newSpecies: Species = {
       id: editingSpecies?.id || Date.now().toString(),
-      name: formData.name || "",
-      type: formData.type || "",
-      temperature: formData.temperature || "",
-      nestHumidity: formData.nestHumidity || "",
-      arenaHumidity: formData.arenaHumidity || "",
-      changes: formData.changes || [],
-      behavior: formData.behavior || "",
-      description: formData.description || "",
-      price: formData.price || 0,
-      available: formData.available !== undefined ? formData.available : true,
-      inStock: formData.inStock !== undefined ? formData.inStock : false,
+      name: data.name,
+      type: data.type,
+      temperature: data.temperature,
+      nestHumidity: data.nestHumidity,
+      arenaHumidity: data.arenaHumidity,
+      behavior: data.behavior,
+      description: data.description,
+      price: data.price,
+      available: data.available,
+      inStock: data.inStock,
+      changes: data.changes,
     };
 
     if (editingSpecies) {
@@ -231,19 +270,7 @@ function App() {
 
     setOpenDialog(false);
     setEditingSpecies(null);
-    setFormData({
-      name: "",
-      type: "",
-      temperature: "",
-      nestHumidity: "",
-      arenaHumidity: "",
-      changes: [],
-      behavior: "",
-      description: "",
-      price: 0,
-      available: true,
-      inStock: false,
-    });
+    reset();
     setSnackbar({
       open: true,
       message: "Gatunek został zapisany!",
@@ -253,7 +280,7 @@ function App() {
 
   const handleEdit = (speciesItem: Species) => {
     setEditingSpecies(speciesItem);
-    setFormData(speciesItem);
+    reset(speciesItem);
     setOpenDialog(true);
   };
 
@@ -274,10 +301,8 @@ function App() {
       type: "feeding",
       description: "",
     };
-    setFormData({
-      ...formData,
-      changes: [...(formData.changes || []), newChange],
-    });
+    const currentChanges = getValues("changes") || [];
+    setValue("changes", [...currentChanges, newChange]);
   };
 
   const updateChange = (
@@ -285,15 +310,15 @@ function App() {
     field: keyof ChangeEntry,
     value: string
   ) => {
-    const updatedChanges = [...(formData.changes || [])];
+    const updatedChanges = [...(getValues("changes") || [])];
     updatedChanges[index] = { ...updatedChanges[index], [field]: value };
-    setFormData({ ...formData, changes: updatedChanges });
+    setValue("changes", updatedChanges);
   };
 
   const removeChange = (index: number) => {
-    const updatedChanges =
-      formData.changes?.filter((_, i) => i !== index) || [];
-    setFormData({ ...formData, changes: updatedChanges });
+    const currentChanges = getValues("changes") || [];
+    const updatedChanges = currentChanges.filter((_, i) => i !== index);
+    setValue("changes", updatedChanges);
   };
 
   return (
@@ -381,174 +406,128 @@ function App() {
         </Card>
 
         {/* Species List */}
-        <TableContainer component={Paper} sx={{ mb: 3 }}>
-          <Table>
+        <TableContainer component={Paper} sx={{ mb: 3, overflowX: "auto" }}>
+          <Table sx={{ minWidth: 1200 }}>
             <TableHead>
               <TableRow>
-                <TableCell width="40"></TableCell>
-                <TableCell>Nazwa</TableCell>
-                <TableCell>Typ</TableCell>
-                <TableCell>Cena</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Na stanie</TableCell>
-                <TableCell align="right">Akcje</TableCell>
+                <TableCell sx={{ minWidth: 150 }}>Nazwa</TableCell>
+                <TableCell sx={{ minWidth: 100 }}>Typ</TableCell>
+                <TableCell sx={{ minWidth: 120 }}>Temperatura</TableCell>
+                <TableCell sx={{ minWidth: 140 }}>Wilgotność Gniazda</TableCell>
+                <TableCell sx={{ minWidth: 130 }}>Wilgotność Arena</TableCell>
+                <TableCell sx={{ minWidth: 120 }}>Zachowanie</TableCell>
+                <TableCell sx={{ minWidth: 200 }}>Opis</TableCell>
+                <TableCell sx={{ minWidth: 80 }}>Cena</TableCell>
+                <TableCell sx={{ minWidth: 80 }}>Status</TableCell>
+                <TableCell sx={{ minWidth: 100 }}>Na stanie</TableCell>
+                <TableCell align="right" sx={{ minWidth: 120 }}>
+                  Akcje
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredSpecies.map((speciesItem) => (
-                <React.Fragment key={speciesItem.id}>
-                  <TableRow>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setExpandedRow(
-                            expandedRow === speciesItem.id
-                              ? null
-                              : speciesItem.id
-                          )
-                        }
-                      >
-                        {expandedRow === speciesItem.id ? (
-                          <ExpandLessIcon />
-                        ) : (
-                          <ExpandMoreIcon />
-                        )}
-                      </IconButton>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="medium">
-                        {speciesItem.name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={speciesItem.type}
-                        color="secondary"
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="medium">
-                        {speciesItem.price} PLN
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      {speciesItem.available && speciesItem.inStock && (
-                        <Tooltip title="Dostępny na stanie">
-                          <CheckCircleIcon color="success" />
-                        </Tooltip>
-                      )}
-                      {speciesItem.available && !speciesItem.inStock && (
-                        <Tooltip title="Dostępny, brak na stanie">
-                          <CancelIcon color="warning" />
-                        </Tooltip>
-                      )}
-                      {!speciesItem.available && (
-                        <Tooltip title="Niedostępny">
-                          <CancelIcon color="error" />
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={speciesItem.inStock}
-                        onChange={(e) => {
-                          const updatedSpecies = species.map((s) =>
-                            s.id === speciesItem.id
-                              ? { ...s, inStock: e.target.checked }
-                              : s
-                          );
-                          setSpecies(updatedSpecies);
-                          localStorage.setItem(
-                            "species-data",
-                            JSON.stringify(updatedSpecies)
-                          );
-                        }}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEdit(speciesItem)}
-                        size="small"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDelete(speciesItem.id)}
-                        size="small"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell
-                      style={{ paddingBottom: 0, paddingTop: 0 }}
-                      colSpan={7}
+                <TableRow key={speciesItem.id}>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="medium">
+                      {speciesItem.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={speciesItem.type}
+                      color="secondary"
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {speciesItem.temperature
+                        ? `${speciesItem.temperature}°C`
+                        : "Nie określono"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {speciesItem.nestHumidity
+                        ? `${speciesItem.nestHumidity}%`
+                        : "Nie określono"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {speciesItem.arenaHumidity
+                        ? `${speciesItem.arenaHumidity}%`
+                        : "Nie określono"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {speciesItem.behavior || "Nie określono"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ maxWidth: 200 }}>
+                    <Typography variant="body2" noWrap>
+                      {speciesItem.description || "Brak opisu"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="medium">
+                      {speciesItem.price} PLN
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {speciesItem.available && speciesItem.inStock && (
+                      <Tooltip title="Dostępny na stanie">
+                        <CheckCircleIcon color="success" />
+                      </Tooltip>
+                    )}
+                    {speciesItem.available && !speciesItem.inStock && (
+                      <Tooltip title="Dostępny, brak na stanie">
+                        <CancelIcon color="warning" />
+                      </Tooltip>
+                    )}
+                    {!speciesItem.available && (
+                      <Tooltip title="Niedostępny">
+                        <CancelIcon color="error" />
+                      </Tooltip>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={speciesItem.inStock}
+                      onChange={(e) => {
+                        const updatedSpecies = species.map((s) =>
+                          s.id === speciesItem.id
+                            ? { ...s, inStock: e.target.checked }
+                            : s
+                        );
+                        setSpecies(updatedSpecies);
+                        localStorage.setItem(
+                          "species-data",
+                          JSON.stringify(updatedSpecies)
+                        );
+                      }}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleEdit(speciesItem)}
+                      size="small"
                     >
-                      <Collapse
-                        in={expandedRow === speciesItem.id}
-                        timeout="auto"
-                        unmountOnExit
-                      >
-                        <Box sx={{ margin: 2 }}>
-                          <Typography variant="h6" gutterBottom component="div">
-                            Szczegóły gatunku
-                          </Typography>
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" paragraph>
-                              <strong>Opis:</strong>{" "}
-                              {speciesItem.description || "Brak opisu"}
-                            </Typography>
-                            <Typography variant="body2" gutterBottom>
-                              <strong>Temperatura:</strong>{" "}
-                              {speciesItem.temperature || "Nie określono"}
-                            </Typography>
-                            <Typography variant="body2" gutterBottom>
-                              <strong>Wilgotność gniazda:</strong>{" "}
-                              {speciesItem.nestHumidity || "Nie określono"}
-                            </Typography>
-                            <Typography variant="body2" gutterBottom>
-                              <strong>Wilgotność arena:</strong>{" "}
-                              {speciesItem.arenaHumidity || "Nie określono"}
-                            </Typography>
-                            <Typography variant="body2" gutterBottom>
-                              <strong>Zachowanie:</strong>{" "}
-                              {speciesItem.behavior || "Nie określono"}
-                            </Typography>
-                          </Box>
-                          {speciesItem.changes.length > 0 && (
-                            <Box>
-                              <Typography variant="subtitle2" gutterBottom>
-                                Historia zmian:
-                              </Typography>
-                              {speciesItem.changes.map((change, index) => (
-                                <Typography
-                                  key={index}
-                                  variant="caption"
-                                  display="block"
-                                  sx={{ ml: 2, mb: 0.5 }}
-                                >
-                                  • {change.date} -{" "}
-                                  {change.type === "feeding"
-                                    ? "Karmówka"
-                                    : change.type === "temperature"
-                                    ? "Temperatura"
-                                    : "Inne"}
-                                  : {change.description}
-                                </Typography>
-                              ))}
-                            </Box>
-                          )}
-                        </Box>
-                      </Collapse>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(speciesItem.id)}
+                      size="small"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
               ))}
             </TableBody>
           </Table>
@@ -591,84 +570,111 @@ function App() {
                 mt: 2,
               }}
             >
-              <TextField
-                fullWidth
-                label="Nazwa gatunku"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Nazwa gatunku"
+                    {...field}
+                    error={!!errors.name}
+                    helperText={errors.name?.message}
+                  />
+                )}
               />
 
-              <FormControl fullWidth required>
-                <InputLabel>Typ</InputLabel>
-                <Select
-                  value={formData.type}
-                  label="Typ"
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                >
-                  {speciesTypes.map((type) => (
-                    <MenuItem key={type} value={type}>
-                      {type}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                fullWidth
-                label="Temperatura"
-                value={formData.temperature}
-                onChange={(e) =>
-                  setFormData({ ...formData, temperature: e.target.value })
-                }
-                placeholder="np. 25-30°C"
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth required error={!!errors.type}>
+                    <InputLabel>Typ</InputLabel>
+                    <Select {...field} label="Typ" error={!!errors.type}>
+                      {speciesTypes.map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {errors.type && (
+                      <FormHelperText>{errors.type.message}</FormHelperText>
+                    )}
+                  </FormControl>
+                )}
               />
 
-              <TextField
-                fullWidth
-                label="Wilgotność gniazda"
-                value={formData.nestHumidity}
-                onChange={(e) =>
-                  setFormData({ ...formData, nestHumidity: e.target.value })
-                }
-                placeholder="np. 70-90%"
+              <Controller
+                name="temperature"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Temperatura"
+                    type="number"
+                    {...field}
+                    error={!!errors.temperature}
+                    helperText={errors.temperature?.message}
+                  />
+                )}
               />
 
-              <TextField
-                fullWidth
-                label="Wilgotność arena"
-                value={formData.arenaHumidity}
-                onChange={(e) =>
-                  setFormData({ ...formData, arenaHumidity: e.target.value })
-                }
-                placeholder="np. 50-60%"
+              <Controller
+                name="nestHumidity"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Wilgotność gniazda"
+                    type="number"
+                    {...field}
+                    error={!!errors.nestHumidity}
+                    helperText={errors.nestHumidity?.message}
+                  />
+                )}
               />
 
-              <TextField
-                fullWidth
-                label="Zachowanie"
-                value={formData.behavior}
-                onChange={(e) =>
-                  setFormData({ ...formData, behavior: e.target.value })
-                }
-                placeholder="np. agresywne, spokojne"
+              <Controller
+                name="arenaHumidity"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Wilgotność arena"
+                    type="number"
+                    {...field}
+                    error={!!errors.arenaHumidity}
+                    helperText={errors.arenaHumidity?.message}
+                  />
+                )}
               />
 
-              <TextField
-                fullWidth
-                label="Cena (PLN)"
-                type="number"
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    price: parseFloat(e.target.value) || 0,
-                  })
-                }
+              <Controller
+                name="behavior"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Zachowanie"
+                    {...field}
+                    placeholder="np. agresywne, spokojne"
+                  />
+                )}
+              />
+
+              <Controller
+                name="price"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Cena (PLN)"
+                    type="number"
+                    {...field}
+                    error={!!errors.price}
+                    helperText={errors.price?.message}
+                  />
+                )}
               />
 
               <Box
@@ -678,44 +684,42 @@ function App() {
                   gap: 2,
                 }}
               >
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.available}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          available: e.target.checked,
-                        })
-                      }
+                <Controller
+                  name="available"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={<Switch {...field} checked={field.value} />}
+                      label="Dostępny w sprzedaży"
                     />
-                  }
-                  label="Dostępny w sprzedaży"
+                  )}
                 />
 
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.inStock}
-                      onChange={(e) =>
-                        setFormData({ ...formData, inStock: e.target.checked })
-                      }
+                <Controller
+                  name="inStock"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={<Switch {...field} checked={field.value} />}
+                      label="Na stanie"
                     />
-                  }
-                  label="Na stanie"
+                  )}
                 />
               </Box>
 
               <Box sx={{ gridColumn: "1 / -1" }}>
-                <TextField
-                  fullWidth
-                  label="Opis gatunku"
-                  multiline
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
+                <Controller
+                  name="description"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      fullWidth
+                      label="Opis gatunku"
+                      multiline
+                      rows={3}
+                      {...field}
+                    />
+                  )}
                 />
               </Box>
 
@@ -734,7 +738,7 @@ function App() {
                   </Button>
                 </Box>
 
-                {formData.changes?.map((change, index) => (
+                {getValues("changes")?.map((change, index) => (
                   <Box
                     key={index}
                     sx={{
@@ -748,39 +752,41 @@ function App() {
                       alignItems: "center",
                     }}
                   >
-                    <TextField
-                      fullWidth
-                      label="Data"
-                      type="date"
-                      value={change.date}
-                      onChange={(e) =>
-                        updateChange(index, "date", e.target.value)
-                      }
-                      InputLabelProps={{ shrink: true }}
+                    <Controller
+                      name={`changes.${index}.date`}
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          fullWidth
+                          label="Data"
+                          type="date"
+                          {...field}
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      )}
                     />
 
-                    <FormControl fullWidth>
-                      <InputLabel>Typ zmiany</InputLabel>
-                      <Select
-                        value={change.type}
-                        label="Typ zmiany"
-                        onChange={(e) =>
-                          updateChange(index, "type", e.target.value)
-                        }
-                      >
-                        <MenuItem value="feeding">Karmówka</MenuItem>
-                        <MenuItem value="temperature">Temperatura</MenuItem>
-                        <MenuItem value="other">Inne</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <Controller
+                      name={`changes.${index}.type`}
+                      control={control}
+                      render={({ field }) => (
+                        <FormControl fullWidth>
+                          <InputLabel>Typ zmiany</InputLabel>
+                          <Select {...field} label="Typ zmiany">
+                            <MenuItem value="feeding">Karmówka</MenuItem>
+                            <MenuItem value="temperature">Temperatura</MenuItem>
+                            <MenuItem value="other">Inne</MenuItem>
+                          </Select>
+                        </FormControl>
+                      )}
+                    />
 
-                    <TextField
-                      fullWidth
-                      label="Opis"
-                      value={change.description}
-                      onChange={(e) =>
-                        updateChange(index, "description", e.target.value)
-                      }
+                    <Controller
+                      name={`changes.${index}.description`}
+                      control={control}
+                      render={({ field }) => (
+                        <TextField fullWidth label="Opis" {...field} />
+                      )}
                     />
 
                     <IconButton
@@ -796,7 +802,7 @@ function App() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenDialog(false)}>Anuluj</Button>
-            <Button onClick={handleSave} variant="contained">
+            <Button onClick={handleSubmit(onSubmit)} variant="contained">
               Zapisz
             </Button>
           </DialogActions>

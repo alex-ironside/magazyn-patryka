@@ -6,6 +6,8 @@ import {
   Typography,
   Box,
   Fab,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   SearchFilters,
@@ -34,6 +36,8 @@ function App() {
     updateSpecies,
     deleteSpecies,
     updateStockStatus,
+    loading,
+    error,
   } = useSpecies();
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -44,33 +48,41 @@ function App() {
     severity: "success" as "success" | "error",
   });
 
-  const handleSubmit = (data: any) => {
-    const newSpecies: Omit<Species, "id"> = {
-      name: data.name,
-      type: data.type,
-      temperature: data.temperature,
-      nestHumidity: data.nestHumidity,
-      arenaHumidity: data.arenaHumidity,
-      behavior: data.behavior,
-      description: data.description,
-      price: data.price,
-      inStock: data.inStock,
-      changes: data.changes,
-    };
+  const handleSubmit = async (data: any) => {
+    try {
+      const newSpecies: Omit<Species, "id"> = {
+        name: data.name,
+        type: data.type,
+        temperature: data.temperature,
+        nestHumidity: data.nestHumidity,
+        arenaHumidity: data.arenaHumidity,
+        behavior: data.behavior,
+        description: data.description,
+        price: data.price,
+        inStock: data.inStock,
+        changes: data.changes,
+      };
 
-    if (editingSpecies) {
-      updateSpecies({ ...newSpecies, id: editingSpecies.id });
-    } else {
-      addSpecies(newSpecies);
+      if (editingSpecies) {
+        await updateSpecies({ ...newSpecies, id: editingSpecies.id });
+      } else {
+        await addSpecies(newSpecies);
+      }
+
+      setOpenDialog(false);
+      setEditingSpecies(null);
+      setNotification({
+        open: true,
+        message: "Gatunek został zapisany!",
+        severity: "success",
+      });
+    } catch (err) {
+      setNotification({
+        open: true,
+        message: "Błąd podczas zapisywania gatunku!",
+        severity: "error",
+      });
     }
-
-    setOpenDialog(false);
-    setEditingSpecies(null);
-    setNotification({
-      open: true,
-      message: "Gatunek został zapisany!",
-      severity: "success",
-    });
   };
 
   const handleEdit = (speciesItem: Species) => {
@@ -78,17 +90,33 @@ function App() {
     setOpenDialog(true);
   };
 
-  const handleDelete = (id: string) => {
-    deleteSpecies(id);
-    setNotification({
-      open: true,
-      message: "Gatunek został usunięty!",
-      severity: "success",
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteSpecies(id);
+      setNotification({
+        open: true,
+        message: "Gatunek został usunięty!",
+        severity: "success",
+      });
+    } catch (err) {
+      setNotification({
+        open: true,
+        message: "Błąd podczas usuwania gatunku!",
+        severity: "error",
+      });
+    }
   };
 
-  const handleStockChange = (id: string, inStock: boolean) => {
-    updateStockStatus(id, inStock);
+  const handleStockChange = async (id: string, inStock: boolean) => {
+    try {
+      await updateStockStatus(id, inStock);
+    } catch (err) {
+      setNotification({
+        open: true,
+        message: "Błąd podczas aktualizacji stanu magazynowego!",
+        severity: "error",
+      });
+    }
   };
 
   const handleOpenDialog = () => {
@@ -100,6 +128,24 @@ function App() {
     setOpenDialog(false);
     setEditingSpecies(null);
   };
+
+  if (loading) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight="50vh"
+          >
+            <CircularProgress size={60} />
+          </Box>
+        </Container>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -114,6 +160,12 @@ function App() {
         >
           🐜 Magazyn Gatunków
         </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
 
         <SearchFilters
           searchTerm={searchTerm}
@@ -134,7 +186,7 @@ function App() {
           onStockChange={handleStockChange}
         />
 
-        {filteredSpecies.length === 0 && (
+        {filteredSpecies.length === 0 && !loading && (
           <Box textAlign="center" py={4}>
             <Typography variant="h6" color="text.secondary">
               Brak gatunków spełniających kryteria wyszukiwania

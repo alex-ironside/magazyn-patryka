@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 import { Species } from "../types/Species";
+import {
+  getAllSpecies,
+  addSpecies as addSpeciesToFirebase,
+  updateSpecies as updateSpeciesInFirebase,
+  deleteSpecies as deleteSpeciesFromFirebase,
+  updateStockStatus as updateStockStatusInFirebase,
+  subscribeToSpecies,
+} from "../services/firebaseService";
 
 export const useSpecies = () => {
   const [species, setSpecies] = useState<Species[]>([]);
@@ -8,15 +16,37 @@ export const useSpecies = () => {
   const [typeFilter, setTypeFilter] = useState("");
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load data from localStorage on mount
+  // Load data from Firebase on mount and set up real-time listener
   useEffect(() => {
-    const savedSpecies = localStorage.getItem("species-data");
-    if (savedSpecies) {
-      const parsed = JSON.parse(savedSpecies);
-      setSpecies(parsed);
-      setFilteredSpecies(parsed);
-    }
+    const loadSpecies = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Initial load
+        const initialSpecies = await getAllSpecies();
+        setSpecies(initialSpecies);
+        setFilteredSpecies(initialSpecies);
+
+        // Set up real-time listener
+        const unsubscribe = subscribeToSpecies((updatedSpecies) => {
+          setSpecies(updatedSpecies);
+        });
+
+        setLoading(false);
+
+        // Cleanup subscription on unmount
+        return unsubscribe;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load species");
+        setLoading(false);
+      }
+    };
+
+    loadSpecies();
   }, []);
 
   // Filter species based on search criteria
@@ -50,36 +80,51 @@ export const useSpecies = () => {
     setFilteredSpecies(filtered);
   }, [species, searchTerm, typeFilter, priceRange, showAvailableOnly]);
 
-  const addSpecies = (newSpecies: Omit<Species, "id">) => {
-    const speciesWithId: Species = {
-      ...newSpecies,
-      id: Date.now().toString(),
-    };
-    const updatedSpecies = [...species, speciesWithId];
-    setSpecies(updatedSpecies);
-    localStorage.setItem("species-data", JSON.stringify(updatedSpecies));
+  const addSpecies = async (newSpecies: Omit<Species, "id">) => {
+    try {
+      setError(null);
+      await addSpeciesToFirebase(newSpecies);
+      // Real-time listener will automatically update the state
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add species");
+      throw err;
+    }
   };
 
-  const updateSpecies = (updatedSpecies: Species) => {
-    const newSpeciesList = species.map((s) =>
-      s.id === updatedSpecies.id ? updatedSpecies : s
-    );
-    setSpecies(newSpeciesList);
-    localStorage.setItem("species-data", JSON.stringify(newSpeciesList));
+  const updateSpecies = async (updatedSpecies: Species) => {
+    try {
+      setError(null);
+      const { id, ...speciesData } = updatedSpecies;
+      await updateSpeciesInFirebase(id, speciesData);
+      // Real-time listener will automatically update the state
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update species");
+      throw err;
+    }
   };
 
-  const deleteSpecies = (id: string) => {
-    const updatedSpecies = species.filter((s) => s.id !== id);
-    setSpecies(updatedSpecies);
-    localStorage.setItem("species-data", JSON.stringify(updatedSpecies));
+  const deleteSpecies = async (id: string) => {
+    try {
+      setError(null);
+      await deleteSpeciesFromFirebase(id);
+      // Real-time listener will automatically update the state
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete species");
+      throw err;
+    }
   };
 
-  const updateStockStatus = (id: string, inStock: boolean) => {
-    const updatedSpecies = species.map((s) =>
-      s.id === id ? { ...s, inStock } : s
-    );
-    setSpecies(updatedSpecies);
-    localStorage.setItem("species-data", JSON.stringify(updatedSpecies));
+  const updateStockStatus = async (id: string, inStock: boolean) => {
+    try {
+      setError(null);
+      await updateStockStatusInFirebase(id, inStock);
+      // Real-time listener will automatically update the state
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to update stock status"
+      );
+      throw err;
+    }
   };
 
   return {
@@ -97,5 +142,7 @@ export const useSpecies = () => {
     updateSpecies,
     deleteSpecies,
     updateStockStatus,
+    loading,
+    error,
   };
 };

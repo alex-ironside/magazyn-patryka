@@ -1,6 +1,6 @@
 # Species Management System
 
-A React application for managing arthropod species information with features like CRUD operations, search/filtering, and Firebase Firestore database integration.
+A React application for managing arthropod species information with features like CRUD operations, search/filtering, Firebase Firestore database integration, and secure authentication.
 
 ## Project Structure
 
@@ -11,16 +11,20 @@ src/
 │   ├── SpeciesTable.tsx  # Table display for species data
 │   ├── SpeciesForm.tsx   # Form for adding/editing species
 │   ├── Notification.tsx  # Snackbar notifications
+│   ├── LoginForm.tsx     # Authentication login form
+│   ├── ProtectedRoute.tsx # Route protection component
 │   └── index.ts         # Component exports
 ├── config/              # Configuration files
 │   └── firebase.ts      # Firebase configuration
 ├── hooks/               # Custom React hooks
 │   ├── useSpecies.ts    # Species data management hook
+│   ├── useAuth.ts       # Authentication hook
 │   └── index.ts         # Hook exports
 ├── icons/               # Custom icon components
 │   └── CustomIcons.tsx  # Text-based icon components
 ├── services/            # API and external services
-│   └── firebaseService.ts # Firebase Firestore operations
+│   ├── firebaseService.ts # Firebase Firestore operations
+│   └── authService.ts   # Firebase Authentication operations
 ├── theme/               # Material-UI theme configuration
 │   └── theme.ts         # Theme settings
 ├── types/               # TypeScript type definitions
@@ -60,6 +64,24 @@ Form component for adding and editing species with:
 
 Reusable notification component for displaying success/error messages.
 
+### LoginForm
+
+Authentication login form with:
+
+- Email and password fields
+- Form validation using Zod
+- Error handling and loading states
+- Clean Material-UI design
+
+### ProtectedRoute
+
+Route protection component that:
+
+- Checks user authentication status
+- Shows login form for unauthenticated users
+- Displays main app with logout button for authenticated users
+- Handles loading states during authentication checks
+
 ## Hooks
 
 ### useSpecies
@@ -72,6 +94,16 @@ Custom hook that manages:
 - CRUD operations with error handling
 - Loading states
 
+### useAuth
+
+Custom hook that manages:
+
+- User authentication state
+- Login/logout functionality
+- Firebase Authentication integration
+- Error handling for auth operations
+- Real-time auth state changes
+
 ## Services
 
 ### Firebase Service
@@ -83,8 +115,19 @@ Handles all Firebase Firestore operations:
 - Error handling and logging
 - Optimistic updates
 
+### Auth Service
+
+Handles Firebase Authentication operations:
+
+- Email/password login
+- User logout
+- Auth state management
+- Error handling for auth operations
+
 ## Features
 
+- **Authentication**: Secure email/password login with Firebase Auth
+- **Route Protection**: All app features are locked behind authentication
 - **CRUD Operations**: Create, read, update, and delete species
 - **Real-time Updates**: Automatic synchronization across multiple users
 - **Search & Filter**: Filter by name, type, price range, and availability
@@ -103,6 +146,7 @@ Handles all Firebase Firestore operations:
 - React Hook Form
 - Zod (validation)
 - Firebase Firestore
+- Firebase Authentication
 - CSS Grid
 
 ## Getting Started
@@ -124,6 +168,7 @@ Handles all Firebase Firestore operations:
 
    - Follow the [Firebase Setup Guide](./FIREBASE_SETUP.md)
    - Update `src/config/firebase.ts` with your Firebase configuration
+   - Enable Authentication and create users in Firebase Console
 
 3. Start the development server:
 
@@ -139,8 +184,10 @@ Before running the application, you need to:
 
 1. Create a Firebase project
 2. Set up Firestore Database
-3. Update the Firebase configuration in `src/config/firebase.ts`
-4. Set up security rules (optional for development)
+3. Enable Authentication with email/password
+4. Create users in Firebase Authentication console
+5. Update the Firebase configuration in `src/config/firebase.ts`
+6. Set up security rules (see FIREBASE_SETUP.md)
 
 See [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for detailed instructions.
 
@@ -165,6 +212,13 @@ species (collection)
 └── ...
 ```
 
+## Security
+
+- **Authentication Required**: All data access requires valid user authentication
+- **Firestore Rules**: Database access is restricted to authenticated users only
+- **No Registration**: User accounts must be created manually in Firebase Console
+- **Secure Configuration**: Environment variables recommended for production
+
 ## Environment Variables
 
 For production, use environment variables for Firebase configuration:
@@ -180,7 +234,7 @@ REACT_APP_FIREBASE_APP_ID=your-app-id
 
 ## Future Enhancements
 
-- User authentication and authorization
+- User roles and permissions
 - Firebase Analytics integration
 - Import/export functionality
 - Advanced filtering options
@@ -188,3 +242,5 @@ REACT_APP_FIREBASE_APP_ID=your-app-id
 - Offline support with Firebase offline persistence
 - Image upload for species photos
 - Advanced reporting and analytics
+- Password reset functionality
+- User profile management

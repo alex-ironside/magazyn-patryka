@@ -14,6 +14,7 @@ import {
   SpeciesTable,
   SpeciesForm,
   Notification,
+  ProtectedRoute,
 } from "./components";
 import { AddIcon } from "./icons/CustomIcons";
 import { useSpecies } from "./hooks";
@@ -150,73 +151,65 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Typography
-          variant="h3"
-          component="h1"
-          gutterBottom
-          align="center"
-          color="primary"
-        >
-          🐜 Magazyn Gatunków
-        </Typography>
+      <ProtectedRoute>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
+          <SearchFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            typeFilter={typeFilter}
+            setTypeFilter={setTypeFilter}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            showAvailableOnly={showAvailableOnly}
+            setShowAvailableOnly={setShowAvailableOnly}
+            speciesTypes={speciesTypes}
+          />
 
-        <SearchFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          typeFilter={typeFilter}
-          setTypeFilter={setTypeFilter}
-          priceRange={priceRange}
-          setPriceRange={setPriceRange}
-          showAvailableOnly={showAvailableOnly}
-          setShowAvailableOnly={setShowAvailableOnly}
-          speciesTypes={speciesTypes}
-        />
+          <SpeciesTable
+            species={filteredSpecies}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onStockChange={handleStockChange}
+          />
 
-        <SpeciesTable
-          species={filteredSpecies}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onStockChange={handleStockChange}
-        />
+          {filteredSpecies.length === 0 && !loading && (
+            <Box textAlign="center" py={4}>
+              <Typography variant="h6" color="text.secondary">
+                Brak gatunków spełniających kryteria wyszukiwania
+              </Typography>
+            </Box>
+          )}
 
-        {filteredSpecies.length === 0 && !loading && (
-          <Box textAlign="center" py={4}>
-            <Typography variant="h6" color="text.secondary">
-              Brak gatunków spełniających kryteria wyszukiwania
-            </Typography>
-          </Box>
-        )}
+          <Fab
+            color="primary"
+            aria-label="add"
+            sx={{ position: "fixed", bottom: 16, right: 16 }}
+            onClick={handleOpenDialog}
+          >
+            <AddIcon />
+          </Fab>
 
-        <Fab
-          color="primary"
-          aria-label="add"
-          sx={{ position: "fixed", bottom: 16, right: 16 }}
-          onClick={handleOpenDialog}
-        >
-          <AddIcon />
-        </Fab>
+          <SpeciesForm
+            open={openDialog}
+            onClose={handleCloseDialog}
+            onSubmit={handleSubmit}
+            editingSpecies={editingSpecies}
+          />
 
-        <SpeciesForm
-          open={openDialog}
-          onClose={handleCloseDialog}
-          onSubmit={handleSubmit}
-          editingSpecies={editingSpecies}
-        />
-
-        <Notification
-          open={notification.open}
-          message={notification.message}
-          severity={notification.severity}
-          onClose={() => setNotification({ ...notification, open: false })}
-        />
-      </Container>
+          <Notification
+            open={notification.open}
+            message={notification.message}
+            severity={notification.severity}
+            onClose={() => setNotification({ ...notification, open: false })}
+          />
+        </Container>
+      </ProtectedRoute>
     </ThemeProvider>
   );
 }

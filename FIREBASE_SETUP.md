@@ -18,7 +18,22 @@ This guide will help you set up Firebase for the Species Management System.
 4. Select a location for your database (choose the closest to your users)
 5. Click "Done"
 
-## 3. Get Firebase Configuration
+## 3. Enable Authentication
+
+1. In your Firebase project, go to "Authentication" in the left sidebar
+2. Click "Get started"
+3. Go to the "Sign-in method" tab
+4. Enable "Email/Password" authentication:
+   - Click on "Email/Password"
+   - Toggle "Enable" to ON
+   - Click "Save"
+5. **Important**: Disable "Allow users to sign up" if you want to control user creation manually
+6. Go to the "Users" tab to manually add users:
+   - Click "Add user"
+   - Enter email and password
+   - Click "Add user"
+
+## 4. Get Firebase Configuration
 
 1. In your Firebase project, click the gear icon (⚙️) next to "Project Overview"
 2. Select "Project settings"
@@ -27,7 +42,7 @@ This guide will help you set up Firebase for the Species Management System.
 5. Register your app with a nickname (e.g., "species-app")
 6. Copy the Firebase configuration object
 
-## 4. Update Firebase Configuration
+## 5. Update Firebase Configuration
 
 1. Open `src/config/firebase.ts`
 2. Replace the placeholder configuration with your actual Firebase config:
@@ -43,7 +58,7 @@ const firebaseConfig = {
 };
 ```
 
-## 5. Set up Firestore Security Rules (Optional)
+## 6. Set up Firestore Security Rules
 
 For production, you should set up proper security rules. In Firestore Database > Rules:
 
@@ -51,17 +66,17 @@ For production, you should set up proper security rules. In Firestore Database >
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to species collection
+    // Allow read/write access to species collection only for authenticated users
     match /species/{document} {
-      allow read, write: if true; // For development only
+      allow read, write: if request.auth != null;
     }
   }
 }
 ```
 
-For production, implement proper authentication and authorization.
+This ensures that only authenticated users can access the species data.
 
-## 6. Database Structure
+## 7. Database Structure
 
 The application will automatically create the following structure in Firestore:
 
@@ -82,14 +97,17 @@ species (collection)
 └── ...
 ```
 
-## 7. Test the Setup
+## 8. Test the Setup
 
 1. Start your development server: `npm start`
-2. Try adding a new species
-3. Check your Firestore Database to see if the data appears
-4. Test real-time updates by opening multiple browser tabs
+2. You should see a login screen
+3. Use the email/password you created in the Firebase Authentication console
+4. After successful login, you'll see the species management interface
+5. Try adding a new species
+6. Check your Firestore Database to see if the data appears
+7. Test real-time updates by opening multiple browser tabs
 
-## 8. Environment Variables (Recommended)
+## 9. Environment Variables (Recommended)
 
 For better security, use environment variables:
 
@@ -117,16 +135,18 @@ const firebaseConfig = {
 };
 ```
 
-## 9. Deployment Considerations
+## 10. Deployment Considerations
 
 - Set up proper Firestore security rules before production
-- Consider implementing user authentication
+- Ensure authentication is properly configured
 - Set up Firebase Analytics if needed
 - Configure proper CORS settings if deploying to a custom domain
+- Consider implementing user roles and permissions for different access levels
 
 ## Troubleshooting
 
-- **Permission denied errors**: Check your Firestore security rules
+- **Permission denied errors**: Check your Firestore security rules and ensure user is authenticated
+- **Authentication errors**: Verify that email/password authentication is enabled and user exists
 - **Configuration errors**: Verify your Firebase config in `firebase.ts`
 - **Network errors**: Check your internet connection and Firebase project status
-- **Real-time updates not working**: Ensure you're using the correct collection name
+- **Real-time updates not working**: Ensure you're using the correct collection name and user is authenticated

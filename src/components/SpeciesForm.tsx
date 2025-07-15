@@ -240,10 +240,17 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
               <TextField
                 fullWidth
                 label="Cena (PLN)"
-                type="number"
                 {...field}
+                onChange={(e) => {
+                  // Only allow numbers, decimal point, and backspace
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    field.onChange(value);
+                  }
+                }}
                 error={!!errors.price}
                 helperText={errors.price?.message}
+                placeholder="np. 90"
               />
             )}
           />

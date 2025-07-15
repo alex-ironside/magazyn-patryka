@@ -1,5 +1,6 @@
 export interface Species {
   id: string;
+  userId: string; // Add user ID to track ownership
   name: string;
   type: string;
   temperature: string;

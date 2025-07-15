@@ -9,7 +9,7 @@ import {
   subscribeToSpecies,
 } from "../services/firebaseService";
 
-export const useSpecies = () => {
+export const useSpecies = (userId: string) => {
   const [species, setSpecies] = useState<Species[]>([]);
   const [filteredSpecies, setFilteredSpecies] = useState<Species[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,18 +21,23 @@ export const useSpecies = () => {
 
   // Load data from Firebase on mount and set up real-time listener
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     const loadSpecies = async () => {
       try {
         setLoading(true);
         setError(null);
 
         // Initial load
-        const initialSpecies = await getAllSpecies();
+        const initialSpecies = await getAllSpecies(userId);
         setSpecies(initialSpecies);
         setFilteredSpecies(initialSpecies);
 
         // Set up real-time listener
-        const unsubscribe = subscribeToSpecies((updatedSpecies) => {
+        const unsubscribe = subscribeToSpecies(userId, (updatedSpecies) => {
           setSpecies(updatedSpecies);
         });
 
@@ -47,7 +52,7 @@ export const useSpecies = () => {
     };
 
     loadSpecies();
-  }, []);
+  }, [userId]);
 
   // Filter species based on search criteria
   useEffect(() => {
@@ -80,10 +85,10 @@ export const useSpecies = () => {
     setFilteredSpecies(filtered);
   }, [species, searchTerm, typeFilter, priceRange, showAvailableOnly]);
 
-  const addSpecies = async (newSpecies: Omit<Species, "id">) => {
+  const addSpecies = async (newSpecies: Omit<Species, "id" | "userId">) => {
     try {
       setError(null);
-      await addSpeciesToFirebase(newSpecies);
+      await addSpeciesToFirebase(newSpecies, userId);
       // Real-time listener will automatically update the state
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add species");
@@ -94,8 +99,8 @@ export const useSpecies = () => {
   const updateSpecies = async (updatedSpecies: Species) => {
     try {
       setError(null);
-      const { id, ...speciesData } = updatedSpecies;
-      await updateSpeciesInFirebase(id, speciesData);
+      const { id, userId: _, ...speciesData } = updatedSpecies;
+      await updateSpeciesInFirebase(id, speciesData, userId);
       // Real-time listener will automatically update the state
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update species");
@@ -106,7 +111,7 @@ export const useSpecies = () => {
   const deleteSpecies = async (id: string) => {
     try {
       setError(null);
-      await deleteSpeciesFromFirebase(id);
+      await deleteSpeciesFromFirebase(id, userId);
       // Real-time listener will automatically update the state
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete species");
@@ -117,7 +122,7 @@ export const useSpecies = () => {
   const updateStockStatus = async (id: string, inStock: boolean) => {
     try {
       setError(null);
-      await updateStockStatusInFirebase(id, inStock);
+      await updateStockStatusInFirebase(id, inStock, userId);
       // Real-time listener will automatically update the state
     } catch (err) {
       setError(

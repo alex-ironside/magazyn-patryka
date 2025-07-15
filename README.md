@@ -128,6 +128,7 @@ Handles Firebase Authentication operations:
 
 - **Authentication**: Secure email/password login with Firebase Auth
 - **Route Protection**: All app features are locked behind authentication
+- **User-Specific Data**: Each user can only see and manage their own species data
 - **CRUD Operations**: Create, read, update, and delete species
 - **Real-time Updates**: Automatic synchronization across multiple users
 - **Search & Filter**: Filter by name, type, price range, and availability
@@ -198,6 +199,7 @@ The application uses Firebase Firestore with the following structure:
 ```
 species (collection)
 ├── document1
+│   ├── userId: "user123"        # User ID who created this species
 │   ├── name: "Species Name"
 │   ├── type: "Mrówki"
 │   ├── temperature: "25"
@@ -212,10 +214,13 @@ species (collection)
 └── ...
 ```
 
+Each species document is tied to a specific user through the `userId` field, ensuring complete data isolation between users.
+
 ## Security
 
 - **Authentication Required**: All data access requires valid user authentication
-- **Firestore Rules**: Database access is restricted to authenticated users only
+- **User-Specific Data**: Users can only access and modify their own species data
+- **Firestore Rules**: Database access is restricted to authenticated users and their own data only
 - **No Registration**: User accounts must be created manually in Firebase Console
 - **Secure Configuration**: Environment variables recommended for production
 

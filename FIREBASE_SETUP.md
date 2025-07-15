@@ -67,14 +67,20 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Allow read/write access to species collection only for authenticated users
+    // Users can only access their own data (where userId matches their auth uid)
     match /species/{document} {
-      allow read, write: if request.auth != null;
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
   }
 }
 ```
 
-This ensures that only authenticated users can access the species data.
+This ensures that:
+
+- Only authenticated users can access the species data
+- Users can only read, update, and delete species they created (userId matches their auth uid)
+- Users can only create new species with their own userId
 
 ## 7. Database Structure
 
@@ -83,6 +89,7 @@ The application will automatically create the following structure in Firestore:
 ```
 species (collection)
 ├── document1
+│   ├── userId: "user123"        # User ID who created this species
 │   ├── name: "Species Name"
 │   ├── type: "Mrówki"
 │   ├── temperature: "25"
@@ -96,6 +103,8 @@ species (collection)
 ├── document2
 └── ...
 ```
+
+Each species document is tied to a specific user through the `userId` field, ensuring data isolation between users.
 
 ## 8. Test the Setup
 

@@ -17,12 +17,13 @@ import {
   ProtectedRoute,
 } from "./components";
 import { AddIcon } from "./icons/CustomIcons";
-import { useSpecies } from "./hooks";
+import { useSpecies, useAuth } from "./hooks";
 import { theme } from "./theme/theme";
 import { speciesTypes, Species } from "./types/Species";
 import "./App.css";
 
 function App() {
+  const { user } = useAuth();
   const {
     filteredSpecies,
     searchTerm,
@@ -39,7 +40,7 @@ function App() {
     updateStockStatus,
     loading,
     error,
-  } = useSpecies();
+  } = useSpecies(user?.uid || "");
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editingSpecies, setEditingSpecies] = useState<Species | null>(null);
@@ -51,7 +52,7 @@ function App() {
 
   const handleSubmit = async (data: any) => {
     try {
-      const newSpecies: Omit<Species, "id"> = {
+      const newSpecies: Omit<Species, "id" | "userId"> = {
         name: data.name,
         type: data.type,
         temperature: data.temperature,
@@ -65,7 +66,11 @@ function App() {
       };
 
       if (editingSpecies) {
-        await updateSpecies({ ...newSpecies, id: editingSpecies.id });
+        await updateSpecies({
+          ...newSpecies,
+          id: editingSpecies.id,
+          userId: user?.uid || "",
+        });
       } else {
         await addSpecies(newSpecies);
       }

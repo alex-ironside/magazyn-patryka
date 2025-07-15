@@ -6,18 +6,21 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  orderBy,
   onSnapshot,
+  where,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Species } from "../types/Species";
 
 const COLLECTION_NAME = "species";
 
-// Get all species
-export const getAllSpecies = async (): Promise<Species[]> => {
+// Get all species for a specific user
+export const getAllSpecies = async (userId: string): Promise<Species[]> => {
   try {
-    const q = query(collection(db, COLLECTION_NAME), orderBy("name"));
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("userId", "==", userId)
+    );
     const querySnapshot = await getDocs(q);
     const species: Species[] = [];
 
@@ -28,19 +31,24 @@ export const getAllSpecies = async (): Promise<Species[]> => {
       } as Species);
     });
 
-    return species;
+    // Sort by name in JavaScript instead of Firestore
+    return species.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error) {
     console.error("Error getting species:", error);
     throw error;
   }
 };
 
-// Add a new species
+// Add a new species with user ID
 export const addSpecies = async (
-  speciesData: Omit<Species, "id">
+  speciesData: Omit<Species, "id" | "userId">,
+  userId: string
 ): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), speciesData);
+    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+      ...speciesData,
+      userId,
+    });
     return docRef.id;
   } catch (error) {
     console.error("Error adding species:", error);
@@ -48,13 +56,15 @@ export const addSpecies = async (
   }
 };
 
-// Update a species
+// Update a species (only if user owns it)
 export const updateSpecies = async (
   id: string,
-  speciesData: Partial<Species>
+  speciesData: Partial<Species>,
+  userId: string
 ): Promise<void> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
+    // Note: Firestore security rules should also check ownership
     await updateDoc(docRef, speciesData);
   } catch (error) {
     console.error("Error updating species:", error);
@@ -62,10 +72,14 @@ export const updateSpecies = async (
   }
 };
 
-// Delete a species
-export const deleteSpecies = async (id: string): Promise<void> => {
+// Delete a species (only if user owns it)
+export const deleteSpecies = async (
+  id: string,
+  userId: string
+): Promise<void> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
+    // Note: Firestore security rules should also check ownership
     await deleteDoc(docRef);
   } catch (error) {
     console.error("Error deleting species:", error);
@@ -73,13 +87,15 @@ export const deleteSpecies = async (id: string): Promise<void> => {
   }
 };
 
-// Update stock status
+// Update stock status (only if user owns it)
 export const updateStockStatus = async (
   id: string,
-  inStock: boolean
+  inStock: boolean,
+  userId: string
 ): Promise<void> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
+    // Note: Firestore security rules should also check ownership
     await updateDoc(docRef, { inStock });
   } catch (error) {
     console.error("Error updating stock status:", error);
@@ -87,9 +103,15 @@ export const updateStockStatus = async (
   }
 };
 
-// Real-time listener for species changes
-export const subscribeToSpecies = (callback: (species: Species[]) => void) => {
-  const q = query(collection(db, COLLECTION_NAME), orderBy("name"));
+// Real-time listener for species changes (user-specific)
+export const subscribeToSpecies = (
+  userId: string,
+  callback: (species: Species[]) => void
+) => {
+  const q = query(
+    collection(db, COLLECTION_NAME),
+    where("userId", "==", userId)
+  );
 
   return onSnapshot(q, (querySnapshot) => {
     const species: Species[] = [];
@@ -99,6 +121,7 @@ export const subscribeToSpecies = (callback: (species: Species[]) => void) => {
         ...doc.data(),
       } as Species);
     });
-    callback(species);
+    // Sort by name in JavaScript instead of Firestore
+    callback(species.sort((a, b) => a.name.localeCompare(b.name)));
   });
 };

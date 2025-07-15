@@ -22,7 +22,7 @@ export const useCategories = () => {
         setError(null);
 
         // Create default categories if none exist
-        await createDefaultCategories();
+        // await createDefaultCategories();
 
         // Initial load
         const initialCategories = await getAllCategories();

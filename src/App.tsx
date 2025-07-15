@@ -73,7 +73,7 @@ function App() {
         arenaHumidity: data.arenaHumidity,
         behavior: data.behavior,
         description: data.description,
-        price: data.price,
+        price: parseFloat(data.price) || 0,
         inStock: data.inStock,
         changes: data.changes,
       };

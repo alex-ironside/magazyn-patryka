@@ -43,7 +43,11 @@ const speciesFormSchema = z.object({
   }, "Wilgotność arena musi być między 0 a 100"),
   behavior: z.string(),
   description: z.string(),
-  price: z.number().min(0, "Cena musi być większa od 0"),
+  price: z.string().refine((val) => {
+    if (val === "") return true; // Allow empty
+    const num = parseFloat(val);
+    return !isNaN(num) && num > 0;
+  }, "Cena musi być większa od 0"),
   inStock: z.boolean(),
   changes: z.array(
     z.object({
@@ -92,7 +96,7 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
       arenaHumidity: "",
       behavior: "",
       description: "",
-      price: 0,
+      price: "",
       inStock: false,
       changes: [],
     },
@@ -100,7 +104,11 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
 
   React.useEffect(() => {
     if (editingSpecies) {
-      reset(editingSpecies);
+      // Convert price from number to string for the form
+      reset({
+        ...editingSpecies,
+        price: editingSpecies.price.toString(),
+      });
     } else {
       reset();
     }

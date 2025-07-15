@@ -130,6 +130,16 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
     setValue("changes", updatedChanges);
   };
 
+  const handleCancel = () => {
+    reset(); // Clear the form
+    onClose();
+  };
+
+  const handleSave = handleSubmit((data) => {
+    onSubmit(data);
+    reset(); // Clear the form after successful submission
+  });
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
@@ -357,8 +367,8 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Anuluj</Button>
-        <Button onClick={handleSubmit(onSubmit)} variant="contained">
+        <Button onClick={handleCancel}>Anuluj</Button>
+        <Button onClick={handleSave} variant="contained">
           Zapisz
         </Button>
       </DialogActions>

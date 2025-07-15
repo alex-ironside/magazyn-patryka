@@ -8,6 +8,7 @@ import {
   Fab,
   CircularProgress,
   Alert,
+  Button,
 } from "@mui/material";
 import {
   SearchFilters,
@@ -15,11 +16,12 @@ import {
   SpeciesForm,
   Notification,
   ProtectedRoute,
+  CategoryManager,
 } from "./components";
-import { AddIcon } from "./icons/CustomIcons";
-import { useSpecies, useAuth } from "./hooks";
+import { AddIcon, SettingsIcon } from "./icons/CustomIcons";
+import { useSpecies, useAuth, useCategories } from "./hooks";
 import { theme } from "./theme/theme";
-import { speciesTypes, Species } from "./types/Species";
+import { Species } from "./types/Species";
 import "./App.css";
 
 function App() {
@@ -38,12 +40,23 @@ function App() {
     updateSpecies,
     deleteSpecies,
     updateStockStatus,
-    loading,
-    error,
+    loading: speciesLoading,
+    error: speciesError,
   } = useSpecies(user?.uid || "");
+
+  const {
+    categories,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    getCategoryName,
+    loading: categoriesLoading,
+    error: categoriesError,
+  } = useCategories();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editingSpecies, setEditingSpecies] = useState<Species | null>(null);
+  const [openCategoryManager, setOpenCategoryManager] = useState(false);
   const [notification, setNotification] = useState({
     open: false,
     message: "",
@@ -135,7 +148,15 @@ function App() {
     setEditingSpecies(null);
   };
 
-  if (loading) {
+  const handleCategoryError = (error: string) => {
+    setNotification({
+      open: true,
+      message: error,
+      severity: "error",
+    });
+  };
+
+  if (speciesLoading || categoriesLoading) {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
@@ -158,11 +179,31 @@ function App() {
       <CssBaseline />
       <ProtectedRoute>
         <Container maxWidth="xl" sx={{ py: 4 }}>
-          {error && (
+          {(speciesError || categoriesError) && (
             <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
+              {speciesError || categoriesError}
             </Alert>
           )}
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
+          >
+            <Typography variant="h4" component="h1" color="primary">
+              🐜 Magazyn Gatunków
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<SettingsIcon />}
+              onClick={() => setOpenCategoryManager(true)}
+            >
+              Zarządzaj kategoriami
+            </Button>
+          </Box>
 
           <SearchFilters
             searchTerm={searchTerm}
@@ -173,7 +214,7 @@ function App() {
             setPriceRange={setPriceRange}
             showAvailableOnly={showAvailableOnly}
             setShowAvailableOnly={setShowAvailableOnly}
-            speciesTypes={speciesTypes}
+            categories={categories}
           />
 
           <SpeciesTable
@@ -181,9 +222,10 @@ function App() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onStockChange={handleStockChange}
+            getCategoryName={getCategoryName}
           />
 
-          {filteredSpecies.length === 0 && !loading && (
+          {filteredSpecies.length === 0 && !speciesLoading && (
             <Box textAlign="center" py={4}>
               <Typography variant="h6" color="text.secondary">
                 Brak gatunków spełniających kryteria wyszukiwania
@@ -205,6 +247,18 @@ function App() {
             onClose={handleCloseDialog}
             onSubmit={handleSubmit}
             editingSpecies={editingSpecies}
+            categories={categories}
+          />
+
+          <CategoryManager
+            open={openCategoryManager}
+            onClose={() => setOpenCategoryManager(false)}
+            categories={categories}
+            onAddCategory={addCategory}
+            onUpdateCategory={updateCategory}
+            onDeleteCategory={deleteCategory}
+            loading={categoriesLoading}
+            error={categoriesError}
           />
 
           <Notification

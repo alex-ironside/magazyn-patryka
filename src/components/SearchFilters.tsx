@@ -12,6 +12,7 @@ import {
   Switch,
 } from "@mui/material";
 import { SearchIcon } from "../icons/CustomIcons";
+import { Category } from "../types/Species";
 
 interface SearchFiltersProps {
   searchTerm: string;
@@ -22,7 +23,7 @@ interface SearchFiltersProps {
   setPriceRange: (range: { min: string; max: string }) => void;
   showAvailableOnly: boolean;
   setShowAvailableOnly: (show: boolean) => void;
-  speciesTypes: string[];
+  categories: Category[];
 }
 
 export const SearchFilters: React.FC<SearchFiltersProps> = ({
@@ -34,7 +35,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
   setPriceRange,
   showAvailableOnly,
   setShowAvailableOnly,
-  speciesTypes,
+  categories,
 }) => {
   return (
     <Card sx={{ mb: 3 }}>
@@ -58,16 +59,16 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
           />
 
           <FormControl fullWidth>
-            <InputLabel>Typ</InputLabel>
+            <InputLabel>Kategoria</InputLabel>
             <Select
               value={typeFilter}
-              label="Typ"
+              label="Kategoria"
               onChange={(e) => setTypeFilter(e.target.value)}
             >
               <MenuItem value="">Wszystkie</MenuItem>
-              {speciesTypes.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {type}
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
                 </MenuItem>
               ))}
             </Select>

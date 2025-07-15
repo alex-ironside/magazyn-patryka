@@ -20,12 +20,12 @@ import {
   Typography,
 } from "@mui/material";
 import { AddIcon, DeleteIcon } from "../icons/CustomIcons";
-import { Species, speciesTypes } from "../types/Species";
+import { Species, Category } from "../types/Species";
 
 // Zod schema for form validation
 const speciesFormSchema = z.object({
   name: z.string().min(1, "Nazwa gatunku jest wymagana"),
-  type: z.string().min(1, "Typ jest wymagany"),
+  type: z.string().min(1, "Kategoria jest wymagana"),
   temperature: z.string().refine((val) => {
     if (val === "") return true; // Allow empty
     const num = parseFloat(val);
@@ -65,6 +65,7 @@ interface SpeciesFormProps {
   onClose: () => void;
   onSubmit: (data: SpeciesFormData) => void;
   editingSpecies?: Species | null;
+  categories: Category[];
 }
 
 export const SpeciesForm: React.FC<SpeciesFormProps> = ({
@@ -72,6 +73,7 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
   onClose,
   onSubmit,
   editingSpecies,
+  categories,
 }) => {
   const {
     control,
@@ -153,11 +155,11 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
             control={control}
             render={({ field }) => (
               <FormControl fullWidth required error={!!errors.type}>
-                <InputLabel>Typ</InputLabel>
-                <Select {...field} label="Typ" error={!!errors.type}>
-                  {speciesTypes.map((type) => (
-                    <MenuItem key={type} value={type}>
-                      {type}
+                <InputLabel>Kategoria</InputLabel>
+                <Select {...field} label="Kategoria" error={!!errors.type}>
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
                     </MenuItem>
                   ))}
                 </Select>

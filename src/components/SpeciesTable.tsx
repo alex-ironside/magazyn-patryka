@@ -20,6 +20,7 @@ interface SpeciesTableProps {
   onEdit: (species: Species) => void;
   onDelete: (id: string) => void;
   onStockChange: (id: string, inStock: boolean) => void;
+  getCategoryName: (categoryId: string) => string;
 }
 
 export const SpeciesTable: React.FC<SpeciesTableProps> = ({
@@ -27,6 +28,7 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
   onEdit,
   onDelete,
   onStockChange,
+  getCategoryName,
 }) => {
   return (
     <TableContainer component={Paper} sx={{ mb: 3, overflowX: "auto" }}>
@@ -34,7 +36,7 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
         <TableHead>
           <TableRow>
             <TableCell sx={{ minWidth: 150 }}>Nazwa</TableCell>
-            <TableCell sx={{ minWidth: 100 }}>Typ</TableCell>
+            <TableCell sx={{ minWidth: 100 }}>Kategoria</TableCell>
             <TableCell sx={{ minWidth: 120 }}>Temperatura</TableCell>
             <TableCell sx={{ minWidth: 140 }}>Wilgotność Gniazda</TableCell>
             <TableCell sx={{ minWidth: 130 }}>Wilgotność Arena</TableCell>
@@ -56,7 +58,11 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
                 </Typography>
               </TableCell>
               <TableCell>
-                <Chip label={speciesItem.type} color="secondary" size="small" />
+                <Chip
+                  label={getCategoryName(speciesItem.type)}
+                  color="secondary"
+                  size="small"
+                />
               </TableCell>
               <TableCell>
                 <Typography variant="body2">

@@ -72,6 +72,15 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
+
+    // Allow read access to categories for all authenticated users
+    // Categories are shared across all users
+    match /categories/{document} {
+      allow read: if request.auth != null;
+      // For now, allow write access to all authenticated users
+      // You can restrict this to admin users only if needed
+      allow write: if request.auth != null;
+    }
   }
 }
 ```
@@ -81,17 +90,28 @@ This ensures that:
 - Only authenticated users can access the species data
 - Users can only read, update, and delete species they created (userId matches their auth uid)
 - Users can only create new species with their own userId
+- All authenticated users can read categories (shared across all users)
+- All authenticated users can modify categories (you can restrict this to admins if needed)
 
 ## 7. Database Structure
 
 The application will automatically create the following structure in Firestore:
 
 ```
+categories (collection)
+├── document1
+│   ├── name: "Mrówki"           # Category name
+│   ├── color: "#ff6f00"         # Optional color for UI
+│   ├── createdAt: "2024-01-15T10:30:00Z"
+│   └── updatedAt: "2024-01-15T10:30:00Z"
+├── document2
+└── ...
+
 species (collection)
 ├── document1
 │   ├── userId: "user123"        # User ID who created this species
 │   ├── name: "Species Name"
-│   ├── type: "Mrówki"
+│   ├── type: "category_id"      # References category ID
 │   ├── temperature: "25"
 │   ├── nestHumidity: "60"
 │   ├── arenaHumidity: "70"
@@ -104,7 +124,7 @@ species (collection)
 └── ...
 ```
 
-Each species document is tied to a specific user through the `userId` field, ensuring data isolation between users.
+Categories are shared across all users and don't have userId fields. Species are tied to specific users through the `userId` field, ensuring data isolation between users. Species reference categories by their ID in the `type` field.
 
 ## 8. Test the Setup
 

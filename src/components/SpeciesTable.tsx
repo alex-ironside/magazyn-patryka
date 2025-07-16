@@ -66,22 +66,34 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
               </TableCell>
               <TableCell>
                 <Typography variant="body2">
-                  {speciesItem.temperature
-                    ? `${speciesItem.temperature}°C`
+                  {speciesItem.temperatureMin && speciesItem.temperatureMax
+                    ? `${speciesItem.temperatureMin}-${speciesItem.temperatureMax}°C`
+                    : speciesItem.temperatureMin
+                    ? `${speciesItem.temperatureMin}°C`
+                    : speciesItem.temperatureMax
+                    ? `${speciesItem.temperatureMax}°C`
                     : "Nie określono"}
                 </Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body2">
-                  {speciesItem.nestHumidity
-                    ? `${speciesItem.nestHumidity}%`
+                  {speciesItem.nestHumidityMin && speciesItem.nestHumidityMax
+                    ? `${speciesItem.nestHumidityMin}-${speciesItem.nestHumidityMax}%`
+                    : speciesItem.nestHumidityMin
+                    ? `${speciesItem.nestHumidityMin}%`
+                    : speciesItem.nestHumidityMax
+                    ? `${speciesItem.nestHumidityMax}%`
                     : "Nie określono"}
                 </Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body2">
-                  {speciesItem.arenaHumidity
-                    ? `${speciesItem.arenaHumidity}%`
+                  {speciesItem.arenaHumidityMin && speciesItem.arenaHumidityMax
+                    ? `${speciesItem.arenaHumidityMin}-${speciesItem.arenaHumidityMax}%`
+                    : speciesItem.arenaHumidityMin
+                    ? `${speciesItem.arenaHumidityMin}%`
+                    : speciesItem.arenaHumidityMax
+                    ? `${speciesItem.arenaHumidityMax}%`
                     : "Nie określono"}
                 </Typography>
               </TableCell>

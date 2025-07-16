@@ -26,21 +26,36 @@ import { Species, Category } from "../types/Species";
 const speciesFormSchema = z.object({
   name: z.string().min(1, "Nazwa gatunku jest wymagana"),
   type: z.string().min(1, "Kategoria jest wymagana"),
-  temperature: z.string().refine((val) => {
+  temperatureMin: z.string().refine((val) => {
     if (val === "") return true; // Allow empty
     const num = parseFloat(val);
     return !isNaN(num) && num >= 0 && num <= 100;
-  }, "Temperatura musi być między 0 a 100"),
-  nestHumidity: z.string().refine((val) => {
+  }, "Temperatura min musi być między 0 a 100"),
+  temperatureMax: z.string().refine((val) => {
     if (val === "") return true; // Allow empty
     const num = parseFloat(val);
     return !isNaN(num) && num >= 0 && num <= 100;
-  }, "Wilgotność gniazda musi być między 0 a 100"),
-  arenaHumidity: z.string().refine((val) => {
+  }, "Temperatura max musi być między 0 a 100"),
+  nestHumidityMin: z.string().refine((val) => {
     if (val === "") return true; // Allow empty
     const num = parseFloat(val);
     return !isNaN(num) && num >= 0 && num <= 100;
-  }, "Wilgotność arena musi być między 0 a 100"),
+  }, "Wilgotność gniazda min musi być między 0 a 100"),
+  nestHumidityMax: z.string().refine((val) => {
+    if (val === "") return true; // Allow empty
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  }, "Wilgotność gniazda max musi być między 0 a 100"),
+  arenaHumidityMin: z.string().refine((val) => {
+    if (val === "") return true; // Allow empty
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  }, "Wilgotność arena min musi być między 0 a 100"),
+  arenaHumidityMax: z.string().refine((val) => {
+    if (val === "") return true; // Allow empty
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  }, "Wilgotność arena max musi być między 0 a 100"),
   behavior: z.string(),
   description: z.string(),
   price: z.string().refine((val) => {
@@ -91,9 +106,12 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
     defaultValues: {
       name: "",
       type: "",
-      temperature: "",
-      nestHumidity: "",
-      arenaHumidity: "",
+      temperatureMin: "",
+      temperatureMax: "",
+      nestHumidityMin: "",
+      nestHumidityMax: "",
+      arenaHumidityMin: "",
+      arenaHumidityMax: "",
       behavior: "",
       description: "",
       price: "",
@@ -104,9 +122,15 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
 
   React.useEffect(() => {
     if (editingSpecies) {
-      // Convert price from number to string for the form
+      // Convert number fields to strings for the form
       reset({
         ...editingSpecies,
+        temperatureMin: editingSpecies.temperatureMin?.toString() || "",
+        temperatureMax: editingSpecies.temperatureMax?.toString() || "",
+        nestHumidityMin: editingSpecies.nestHumidityMin?.toString() || "",
+        nestHumidityMax: editingSpecies.nestHumidityMax?.toString() || "",
+        arenaHumidityMin: editingSpecies.arenaHumidityMin?.toString() || "",
+        arenaHumidityMax: editingSpecies.arenaHumidityMax?.toString() || "",
         price: editingSpecies.price.toString(),
       });
     } else {
@@ -186,46 +210,130 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
           />
 
           <Controller
-            name="temperature"
+            name="temperatureMin"
             control={control}
             render={({ field }) => (
               <TextField
                 fullWidth
-                label="Temperatura"
+                label="Temperatura min"
                 type="number"
                 {...field}
-                error={!!errors.temperature}
-                helperText={errors.temperature?.message}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    field.onChange(value);
+                  }
+                }}
+                error={!!errors.temperatureMin}
+                helperText={errors.temperatureMin?.message}
+                placeholder="20"
               />
             )}
           />
 
           <Controller
-            name="nestHumidity"
+            name="temperatureMax"
             control={control}
             render={({ field }) => (
               <TextField
                 fullWidth
-                label="Wilgotność gniazda"
+                label="Temperatura max"
                 type="number"
                 {...field}
-                error={!!errors.nestHumidity}
-                helperText={errors.nestHumidity?.message}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    field.onChange(value);
+                  }
+                }}
+                error={!!errors.temperatureMax}
+                placeholder="25"
               />
             )}
           />
 
           <Controller
-            name="arenaHumidity"
+            name="nestHumidityMin"
             control={control}
             render={({ field }) => (
               <TextField
                 fullWidth
-                label="Wilgotność arena"
+                label="Wilgotność gniazda min"
                 type="number"
                 {...field}
-                error={!!errors.arenaHumidity}
-                helperText={errors.arenaHumidity?.message}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    field.onChange(value);
+                  }
+                }}
+                error={!!errors.nestHumidityMin}
+                helperText={errors.nestHumidityMin?.message}
+                placeholder="60"
+              />
+            )}
+          />
+
+          <Controller
+            name="nestHumidityMax"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                fullWidth
+                label="Wilgotność gniazda max"
+                type="number"
+                {...field}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    field.onChange(value);
+                  }
+                }}
+                error={!!errors.nestHumidityMax}
+                placeholder="70"
+              />
+            )}
+          />
+
+          <Controller
+            name="arenaHumidityMin"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                fullWidth
+                label="Wilgotność arena min"
+                type="number"
+                {...field}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    field.onChange(value);
+                  }
+                }}
+                error={!!errors.arenaHumidityMin}
+                helperText={errors.arenaHumidityMin?.message}
+                placeholder="70"
+              />
+            )}
+          />
+
+          <Controller
+            name="arenaHumidityMax"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                fullWidth
+                label="Wilgotność arena max"
+                type="number"
+                {...field}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                    field.onChange(value);
+                  }
+                }}
+                error={!!errors.arenaHumidityMax}
+                placeholder="80"
               />
             )}
           />

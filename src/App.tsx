@@ -68,9 +68,24 @@ function App() {
       const newSpecies: Omit<Species, "id" | "userId"> = {
         name: data.name,
         type: data.type,
-        temperature: data.temperature,
-        nestHumidity: data.nestHumidity,
-        arenaHumidity: data.arenaHumidity,
+        temperatureMin: data.temperatureMin
+          ? parseFloat(data.temperatureMin)
+          : undefined,
+        temperatureMax: data.temperatureMax
+          ? parseFloat(data.temperatureMax)
+          : undefined,
+        nestHumidityMin: data.nestHumidityMin
+          ? parseFloat(data.nestHumidityMin)
+          : undefined,
+        nestHumidityMax: data.nestHumidityMax
+          ? parseFloat(data.nestHumidityMax)
+          : undefined,
+        arenaHumidityMin: data.arenaHumidityMin
+          ? parseFloat(data.arenaHumidityMin)
+          : undefined,
+        arenaHumidityMax: data.arenaHumidityMax
+          ? parseFloat(data.arenaHumidityMax)
+          : undefined,
         behavior: data.behavior,
         description: data.description,
         price: parseFloat(data.price) || 0,

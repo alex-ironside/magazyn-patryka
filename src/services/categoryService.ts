@@ -41,8 +41,13 @@ export const addCategory = async (
 ): Promise<string> => {
   try {
     const now = new Date().toISOString();
+    // Remove undefined fields before sending to Firestore
+    const dataToSave: Record<string, any> = Object.fromEntries(
+      Object.entries({ ...categoryData }).filter(([_, v]) => v !== undefined)
+    );
+
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
-      ...categoryData,
+      ...dataToSave,
       createdAt: now,
       updatedAt: now,
     });
@@ -60,8 +65,14 @@ export const updateCategory = async (
 ): Promise<void> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
+
+    // Remove undefined fields before updating Firestore
+    const dataToUpdate: Record<string, any> = Object.fromEntries(
+      Object.entries(categoryData).filter(([_, v]) => v !== undefined)
+    );
+
     await updateDoc(docRef, {
-      ...categoryData,
+      ...dataToUpdate,
       updatedAt: new Date().toISOString(),
     });
   } catch (error) {

@@ -258,6 +258,7 @@ function App() {
           </Fab>
 
           <SpeciesForm
+            key={editingSpecies?.id}
             open={openDialog}
             onClose={handleCloseDialog}
             onSubmit={handleSubmit}

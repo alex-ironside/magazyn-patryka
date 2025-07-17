@@ -138,6 +138,13 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
     }
   }, [editingSpecies, reset]);
 
+  // Clear form when opening a new species dialog
+  React.useEffect(() => {
+    if (open && !editingSpecies) {
+      reset();
+    }
+  }, [open, editingSpecies, reset]);
+
   const addChange = () => {
     const newChange = {
       date: new Date().toISOString().split("T")[0],
@@ -164,8 +171,15 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
     reset(); // Clear the form after successful submission
   });
 
+  const handleDialogClose = (_event: any, reason: string) => {
+    if (reason === "backdropClick" || reason === "escapeKeyDown") {
+      // Just close without resetting to preserve data
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleDialogClose} maxWidth="md" fullWidth>
       <DialogTitle>
         {editingSpecies ? "Edytuj gatunek" : "Dodaj nowy gatunek"}
       </DialogTitle>

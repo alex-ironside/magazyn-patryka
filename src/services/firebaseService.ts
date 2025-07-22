@@ -45,8 +45,13 @@ export const addSpecies = async (
   userId: string
 ): Promise<string> => {
   try {
+    // Remove undefined fields before sending to Firestore
+    const dataToSave: Record<string, any> = Object.fromEntries(
+      Object.entries(speciesData).filter(([_, v]) => v !== undefined)
+    );
+
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
-      ...speciesData,
+      ...dataToSave,
       userId,
     });
     return docRef.id;
@@ -64,8 +69,13 @@ export const updateSpecies = async (
 ): Promise<void> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
+    // Remove undefined fields to prevent Firestore errors
+    const dataToUpdate: Record<string, any> = Object.fromEntries(
+      Object.entries(speciesData).filter(([_, v]) => v !== undefined)
+    );
+
     // Note: Firestore security rules should also check ownership
-    await updateDoc(docRef, speciesData);
+    await updateDoc(docRef, dataToUpdate);
   } catch (error) {
     console.error("Error updating species:", error);
     throw error;

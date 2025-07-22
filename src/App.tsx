@@ -68,24 +68,30 @@ function App() {
       const newSpecies: Omit<Species, "id" | "userId"> = {
         name: data.name,
         type: data.type,
-        temperatureMin: data.temperatureMin
-          ? parseFloat(data.temperatureMin)
-          : undefined,
-        temperatureMax: data.temperatureMax
-          ? parseFloat(data.temperatureMax)
-          : undefined,
-        nestHumidityMin: data.nestHumidityMin
-          ? parseFloat(data.nestHumidityMin)
-          : undefined,
-        nestHumidityMax: data.nestHumidityMax
-          ? parseFloat(data.nestHumidityMax)
-          : undefined,
-        arenaHumidityMin: data.arenaHumidityMin
-          ? parseFloat(data.arenaHumidityMin)
-          : undefined,
-        arenaHumidityMax: data.arenaHumidityMax
-          ? parseFloat(data.arenaHumidityMax)
-          : undefined,
+        temperatureMin:
+          data.temperatureMin && data.temperatureMin.trim() !== ""
+            ? parseFloat(data.temperatureMin)
+            : undefined,
+        temperatureMax:
+          data.temperatureMax && data.temperatureMax.trim() !== ""
+            ? parseFloat(data.temperatureMax)
+            : undefined,
+        nestHumidityMin:
+          data.nestHumidityMin && data.nestHumidityMin.trim() !== ""
+            ? parseFloat(data.nestHumidityMin)
+            : undefined,
+        nestHumidityMax:
+          data.nestHumidityMax && data.nestHumidityMax.trim() !== ""
+            ? parseFloat(data.nestHumidityMax)
+            : undefined,
+        arenaHumidityMin:
+          data.arenaHumidityMin && data.arenaHumidityMin.trim() !== ""
+            ? parseFloat(data.arenaHumidityMin)
+            : undefined,
+        arenaHumidityMax:
+          data.arenaHumidityMax && data.arenaHumidityMax.trim() !== ""
+            ? parseFloat(data.arenaHumidityMax)
+            : undefined,
         behavior: data.behavior,
         description: data.description,
         price: parseFloat(data.price) || 0,
@@ -161,14 +167,6 @@ function App() {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingSpecies(null);
-  };
-
-  const handleCategoryError = (error: string) => {
-    setNotification({
-      open: true,
-      message: error,
-      severity: "error",
-    });
   };
 
   if (speciesLoading || categoriesLoading) {

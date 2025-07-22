@@ -58,11 +58,14 @@ const speciesFormSchema = z.object({
   }, "Wilgotność arena max musi być między 0 a 100"),
   behavior: z.string(),
   description: z.string(),
-  price: z.string().refine((val) => {
-    if (val === "") return true; // Allow empty
-    const num = parseFloat(val);
-    return !isNaN(num) && num > 0;
-  }, "Cena musi być większa od 0"),
+  price: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (val === undefined || val === "") return true; // Allow empty or undefined
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0;
+    }, "Cena musi być większa lub równa 0"),
   inStock: z.boolean(),
   changes: z.array(
     z.object({
@@ -114,7 +117,7 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
       arenaHumidityMax: "",
       behavior: "",
       description: "",
-      price: "",
+      price: "0",
       inStock: false,
       changes: [],
     },
@@ -131,7 +134,7 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
         nestHumidityMax: editingSpecies.nestHumidityMax?.toString() || "",
         arenaHumidityMin: editingSpecies.arenaHumidityMin?.toString() || "",
         arenaHumidityMax: editingSpecies.arenaHumidityMax?.toString() || "",
-        price: editingSpecies.price.toString(),
+        price: editingSpecies.price?.toString() || "",
       });
     } else {
       reset();

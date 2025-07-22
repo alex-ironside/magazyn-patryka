@@ -3,12 +3,12 @@ export interface Species {
   userId: string; // Add user ID to track ownership
   name: string;
   type: string; // This will now store the category ID
-  temperatureMin?: number;
-  temperatureMax?: number;
-  nestHumidityMin?: number;
-  nestHumidityMax?: number;
-  arenaHumidityMin?: number;
-  arenaHumidityMax?: number;
+  temperatureMin?: number | null;
+  temperatureMax?: number | null;
+  nestHumidityMin?: number | null;
+  nestHumidityMax?: number | null;
+  arenaHumidityMin?: number | null;
+  arenaHumidityMax?: number | null;
   changes: ChangeEntry[];
   behavior: string;
   description: string;

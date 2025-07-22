@@ -71,27 +71,27 @@ function App() {
         temperatureMin:
           data.temperatureMin && data.temperatureMin.trim() !== ""
             ? parseFloat(data.temperatureMin)
-            : undefined,
+            : null,
         temperatureMax:
           data.temperatureMax && data.temperatureMax.trim() !== ""
             ? parseFloat(data.temperatureMax)
-            : undefined,
+            : null,
         nestHumidityMin:
           data.nestHumidityMin && data.nestHumidityMin.trim() !== ""
             ? parseFloat(data.nestHumidityMin)
-            : undefined,
+            : null,
         nestHumidityMax:
           data.nestHumidityMax && data.nestHumidityMax.trim() !== ""
             ? parseFloat(data.nestHumidityMax)
-            : undefined,
+            : null,
         arenaHumidityMin:
           data.arenaHumidityMin && data.arenaHumidityMin.trim() !== ""
             ? parseFloat(data.arenaHumidityMin)
-            : undefined,
+            : null,
         arenaHumidityMax:
           data.arenaHumidityMax && data.arenaHumidityMax.trim() !== ""
             ? parseFloat(data.arenaHumidityMax)
-            : undefined,
+            : null,
         behavior: data.behavior,
         description: data.description,
         price: parseFloat(data.price) || 0,

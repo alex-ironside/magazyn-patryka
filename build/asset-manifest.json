@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/magazyn-patryka/static/css/main.f855e6bc.css",
-    "main.js": "/magazyn-patryka/static/js/main.9dc782d5.js",
+    "main.js": "/magazyn-patryka/static/js/main.9006e3c7.js",
     "static/js/453.8de23524.chunk.js": "/magazyn-patryka/static/js/453.8de23524.chunk.js",
     "index.html": "/magazyn-patryka/index.html",
     "main.f855e6bc.css.map": "/magazyn-patryka/static/css/main.f855e6bc.css.map",
-    "main.9dc782d5.js.map": "/magazyn-patryka/static/js/main.9dc782d5.js.map",
+    "main.9006e3c7.js.map": "/magazyn-patryka/static/js/main.9006e3c7.js.map",
     "453.8de23524.chunk.js.map": "/magazyn-patryka/static/js/453.8de23524.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f855e6bc.css",
-    "static/js/main.9dc782d5.js"
+    "static/js/main.9006e3c7.js"
   ]
 }

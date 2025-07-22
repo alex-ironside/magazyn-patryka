@@ -11,6 +11,11 @@ import {
   Chip,
   IconButton,
   Switch,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import { EditIcon, DeleteIcon } from "../icons/CustomIcons";
 import type { Species } from "../types/Species";
@@ -30,6 +35,19 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
   onStockChange,
   getCategoryName,
 }) => {
+  const [descOpen, setDescOpen] = React.useState(false);
+  const [currentDesc, setCurrentDesc] = React.useState<string>("");
+
+  const handleDescriptionClick = (desc: string) => {
+    setCurrentDesc(desc || "Brak opisu");
+    setDescOpen(true);
+  };
+
+  const handleCloseDesc = () => {
+    setDescOpen(false);
+    setCurrentDesc("");
+  };
+
   return (
     <TableContainer component={Paper} sx={{ mb: 3, overflowX: "auto" }}>
       <Table sx={{ minWidth: 1100 }}>
@@ -103,7 +121,14 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
                 </Typography>
               </TableCell>
               <TableCell sx={{ maxWidth: 200 }}>
-                <Typography variant="body2" noWrap>
+                <Typography
+                  variant="body2"
+                  noWrap
+                  sx={{ cursor: "pointer", textDecoration: "underline" }}
+                  onClick={() =>
+                    handleDescriptionClick(speciesItem.description)
+                  }
+                >
                   {speciesItem.description || "Brak opisu"}
                 </Typography>
               </TableCell>
@@ -141,6 +166,19 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
           ))}
         </TableBody>
       </Table>
+
+      {/* Description modal */}
+      <Dialog open={descOpen} onClose={handleCloseDesc} maxWidth="lg" fullWidth>
+        <DialogTitle>Opis gatunku</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+            {currentDesc}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDesc}>Zamknij</Button>
+        </DialogActions>
+      </Dialog>
     </TableContainer>
   );
 };

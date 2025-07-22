@@ -398,22 +398,7 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
             )}
           />
 
-          <Box sx={{ gridColumn: "1 / -1" }}>
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  fullWidth
-                  label="Opis gatunku"
-                  multiline
-                  rows={3}
-                  {...field}
-                />
-              )}
-            />
-          </Box>
-
+          {/* Move Changes section ABOVE Description */}
           <Box sx={{ gridColumn: "1 / -1" }}>
             <Box
               sx={{
@@ -443,6 +428,7 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
                   alignItems: "center",
                 }}
               >
+                {/* existing controllers for change fields */}
                 <Controller
                   name={`changes.${index}.date`}
                   control={control}
@@ -456,7 +442,6 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
                     />
                   )}
                 />
-
                 <Controller
                   name={`changes.${index}.type`}
                   control={control}
@@ -471,7 +456,6 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
                     </FormControl>
                   )}
                 />
-
                 <Controller
                   name={`changes.${index}.description`}
                   control={control}
@@ -479,16 +463,40 @@ export const SpeciesForm: React.FC<SpeciesFormProps> = ({
                     <TextField fullWidth label="Opis" {...field} />
                   )}
                 />
-
                 <IconButton onClick={() => removeChange(index)} color="error">
                   <DeleteIcon />
                 </IconButton>
               </Box>
             ))}
           </Box>
+
+          {/* Description section AFTER changes */}
+          <Box sx={{ gridColumn: "1 / -1" }}>
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  fullWidth
+                  label="Opis gatunku"
+                  multiline
+                  minRows={3}
+                  {...field}
+                />
+              )}
+            />
+          </Box>
         </Box>
       </DialogContent>
-      <DialogActions>
+      <DialogActions
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          backgroundColor: "background.paper",
+          py: 2,
+          zIndex: 2,
+        }}
+      >
         <Button onClick={handleCancel}>Anuluj</Button>
         <Button onClick={handleSave} variant="contained">
           Zapisz

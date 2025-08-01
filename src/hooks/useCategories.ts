@@ -6,7 +6,6 @@ import {
   updateCategory as updateCategoryInFirebase,
   deleteCategory as deleteCategoryFromFirebase,
   subscribeToCategories,
-  createDefaultCategories,
 } from "../services/categoryService";
 
 export const useCategories = () => {

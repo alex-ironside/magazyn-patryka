@@ -22,7 +22,14 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { ArrowBackIcon, EditIcon, SaveIcon, CancelIcon, AddIcon, DeleteIcon } from "../icons/CustomIcons";
+import {
+  ArrowBackIcon,
+  EditIcon,
+  SaveIcon,
+  CancelIcon,
+  AddIcon,
+  DeleteIcon,
+} from "../icons/CustomIcons";
 import { Species, Category } from "../types/Species";
 
 // Same validation schema as SpeciesForm
@@ -108,9 +115,6 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
     handleSubmit,
     formState: { errors, isDirty },
     reset,
-    setValue,
-    getValues,
-    watch,
   } = useForm<SpeciesFormData>({
     resolver: zodResolver(speciesFormSchema),
     defaultValues: {
@@ -134,8 +138,6 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
     control,
     name: "changes",
   });
-
-  const watchedChanges = watch("changes");
 
   // Find the current species
   useEffect(() => {
@@ -222,7 +224,10 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+      <Container
+        maxWidth="lg"
+        sx={{ mt: 4, display: "flex", justifyContent: "center" }}
+      >
         <CircularProgress />
       </Container>
     );
@@ -232,7 +237,8 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="error">
-          Nie znaleziono gatunku. <Button onClick={handleBack}>Powrót do listy</Button>
+          Nie znaleziono gatunku.{" "}
+          <Button onClick={handleBack}>Powrót do listy</Button>
         </Alert>
       </Container>
     );
@@ -242,7 +248,14 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 4 }}>
         {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 4,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <IconButton onClick={handleBack}>
               <ArrowBackIcon />
@@ -250,18 +263,18 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
             <Typography variant="h4" component="h1">
               {currentSpecies.name}
             </Typography>
-            <Chip 
-              label={getCategoryName(currentSpecies.type)} 
-              color="primary" 
-              variant="outlined" 
+            <Chip
+              label={getCategoryName(currentSpecies.type)}
+              color="primary"
+              variant="outlined"
             />
-            <Chip 
-              label={currentSpecies.inStock ? "Na stanie" : "Brak na stanie"} 
-              color={currentSpecies.inStock ? "success" : "error"} 
-              variant="outlined" 
+            <Chip
+              label={currentSpecies.inStock ? "Na stanie" : "Brak na stanie"}
+              color={currentSpecies.inStock ? "success" : "error"}
+              variant="outlined"
             />
           </Box>
-          
+
           <Box sx={{ display: "flex", gap: 1 }}>
             {isEditing ? (
               <>
@@ -294,7 +307,13 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
         </Box>
 
         {/* Form Content */}
-        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 3 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 3,
+          }}
+        >
           {/* Basic Information */}
           <Controller
             name="name"
@@ -470,7 +489,13 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
             control={control}
             render={({ field }) => (
               <FormControlLabel
-                control={<Switch {...field} checked={field.value} disabled={!isEditing} />}
+                control={
+                  <Switch
+                    {...field}
+                    checked={field.value}
+                    disabled={!isEditing}
+                  />
+                }
                 label="Na stanie"
               />
             )}
@@ -481,7 +506,14 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
 
         {/* Changes Section */}
         <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
             <Typography variant="h5">Zmiany</Typography>
             {isEditing && (
               <Button onClick={addChange} startIcon={<AddIcon />}>
@@ -495,7 +527,9 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
               key={field.id}
               sx={{
                 display: "grid",
-                gridTemplateColumns: isEditing ? "1fr 1fr 2fr auto" : "1fr 1fr 2fr",
+                gridTemplateColumns: isEditing
+                  ? "1fr 1fr 2fr auto"
+                  : "1fr 1fr 2fr",
                 gap: 2,
                 mb: 2,
                 p: 2,
@@ -521,7 +555,7 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
               <Controller
                 name={`changes.${index}.type`}
                 control={control}
-                render={({ field }) => (
+                render={({ field }) =>
                   isEditing ? (
                     <FormControl fullWidth>
                       <InputLabel>Typ zmiany</InputLabel>
@@ -534,16 +568,16 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
                   ) : (
                     <Typography>{getChangeTypeLabel(field.value)}</Typography>
                   )
-                )}
+                }
               />
               <Controller
                 name={`changes.${index}.description`}
                 control={control}
                 render={({ field }) => (
-                  <TextField 
-                    fullWidth 
-                    label="Opis" 
-                    {...field} 
+                  <TextField
+                    fullWidth
+                    label="Opis"
+                    {...field}
                     disabled={!isEditing}
                     multiline={!isEditing}
                   />
@@ -581,7 +615,9 @@ export const SpeciesDetails: React.FC<SpeciesDetailsProps> = ({
                 minRows={4}
                 {...field}
                 disabled={!isEditing}
-                placeholder={isEditing ? "Wprowadź opis gatunku..." : "Brak opisu"}
+                placeholder={
+                  isEditing ? "Wprowadź opis gatunku..." : "Brak opisu"
+                }
               />
             )}
           />

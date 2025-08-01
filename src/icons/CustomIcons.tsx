@@ -15,6 +15,8 @@ export const CheckCircleIcon = ({ color }: { color: string }) => (
     ✅
   </span>
 );
-export const CancelIcon = ({ color }: { color: string }) => (
+export const CancelIcon = ({ color }: { color?: string } = {}) => (
   <span style={{ color: color === "warning" ? "orange" : "red" }}>❌</span>
 );
+export const ArrowBackIcon = () => <span>←</span>;
+export const SaveIcon = () => <span>💾</span>;

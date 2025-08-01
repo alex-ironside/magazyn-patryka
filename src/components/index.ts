@@ -1,6 +1,8 @@
 export { SearchFilters } from "./SearchFilters";
 export { SpeciesTable } from "./SpeciesTable";
 export { SpeciesForm } from "./SpeciesForm";
+export { SpeciesDetails } from "./SpeciesDetails";
+export { SpeciesList } from "./SpeciesList";
 export { Notification } from "./Notification";
 export { LoginForm } from "./LoginForm";
 export { ProtectedRoute } from "./ProtectedRoute";

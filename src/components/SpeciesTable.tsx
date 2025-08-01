@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -35,6 +36,7 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
   onStockChange,
   getCategoryName,
 }) => {
+  const navigate = useNavigate();
   const [descOpen, setDescOpen] = React.useState(false);
   const [currentDesc, setCurrentDesc] = React.useState<string>("");
 
@@ -62,7 +64,7 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
             <TableCell sx={{ minWidth: 200 }}>Opis</TableCell>
             <TableCell sx={{ minWidth: 80 }}>Cena</TableCell>
             <TableCell sx={{ minWidth: 100 }}>Na stanie</TableCell>
-            <TableCell align="right" sx={{ minWidth: 120 }}>
+            <TableCell align="right" sx={{ minWidth: 160 }}>
               Akcje
             </TableCell>
           </TableRow>
@@ -147,6 +149,14 @@ export const SpeciesTable: React.FC<SpeciesTableProps> = ({
                 />
               </TableCell>
               <TableCell align="right">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => navigate(`/species/${speciesItem.id}`)}
+                  sx={{ mr: 1, minWidth: 'auto', px: 1 }}
+                >
+                  Szczegóły
+                </Button>
                 <IconButton
                   color="primary"
                   onClick={() => onEdit(speciesItem)}
